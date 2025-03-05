@@ -1,5 +1,10 @@
 # AQM Formidable Forms Spam Blocker Changelog
 
+## [2.1.68] - 2025-03-05
+- Added utility script to clear update cache
+- Improved error logging for API responses
+- Fixed update mechanism to work with new GitHub repository
+
 ## [2.1.67] - 2025-03-05
 - Changed GitHub repository location for updates
 - Fixed apostrophe handling in blocked messages using stripslashes()
@@ -600,7 +605,8 @@
 - Enhanced error logging with more detailed API request information
 
 ## [1.6.9] - February 26, 2025
-- Enhanced API error handling and logging
+### Fixed
+- Fixed API error handling and logging
 - Improved API key validation with detailed error messages
 - Updated geolocation data caching to use transients
 - Added comprehensive API response testing and diagnostics
@@ -608,10 +614,11 @@
 - Added fallback behavior when API limits are reached
 
 ## [1.6.8] - February 26, 2025
-- Fixed state validation to handle both `region` and `region_code` fields from the API
-- Added API response format testing tool in admin panel
-- Improved error handling and debugging for geolocation checks
-- Enhanced logging for troubleshooting geolocation issues
+### Enhanced
+- Removed "Hide Forms for Blocked IPs" setting
+- Forms are now automatically hidden for users in non-approved locations
+- Improved location checking with better caching
+- Added detailed location information in access logs
 
 ## [1.6.7] - 2023-05-15
 
