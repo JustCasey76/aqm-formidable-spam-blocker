@@ -1,0 +1,314 @@
+/**
+ * Formidable Forms State & ZIP Code Blocker Styles
+ * Version: 2.1.66
+ */
+
+.ffb-blocked-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 20px;
+    margin: 20px 0;
+    border: 2px solid #f5c6cb;
+    border-radius: 4px;
+    font-size: 16px;
+    text-align: center;
+    position: relative;
+    z-index: 9999 !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    font-weight: bold;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.ffb-blocked-message .frm_error_style {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: inherit;
+    box-shadow: none;
+}
+
+.ffb-blocked {
+    position: relative;
+}
+
+/* Strong form hiding to prevent display */
+.ffb-blocked form {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+}
+
+/* Ensure display remains none after form interactions */
+.ffb-blocked form.frm_pro_form,
+.ffb-blocked form.frm_form_id_*,
+.ffb-blocked form.frm_submit,
+.ffb-blocked form input,
+.ffb-blocked form select,
+.ffb-blocked form button,
+.ffb-blocked form .frm_submit {
+    display: none !important;
+}
+
+/* Admin settings page styles */
+.ffb-settings-page .form-table th {
+    width: 250px;
+}
+
+.ffb-settings-page .form-table input[type="text"] {
+    width: 100%;
+    max-width: 400px;
+}
+
+.ffb-settings-page .description {
+    font-style: italic;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Admin IP testing section */
+.ffb-settings-page .postbox {
+    padding: 0;
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.ffb-settings-page .postbox .inside {
+    padding: 0 12px 12px;
+    margin: 6px 0 0 0;
+}
+
+.ffb-settings-page .postbox h2 {
+    padding: 8px 12px;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    border-bottom: 1px solid #eee;
+}
+
+.ffb-settings-page .postbox p {
+    margin: 1em 0;
+}
+
+.ffb-settings-page .postbox label {
+    font-weight: bold;
+}
+
+.ffb-settings-page .postbox .description strong {
+    color: #dc3232;
+}
+
+/* IP Search Results Styling */
+#ffb_ip_search_results {
+    margin-top: 15px;
+}
+
+#ffb_ip_search_results h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #23282d;
+}
+
+#ffb_ip_search_results .widefat {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 15px;
+    background: #fff;
+}
+
+#ffb_ip_search_results .widefat td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+#ffb_ip_search_results .widefat tr:last-child td {
+    border-bottom: none;
+}
+
+#ffb_ip_search_results .widefat td:first-child {
+    width: 120px;
+    font-weight: 600;
+}
+
+/* Cache Management Styling */
+.ffb-cache-stats {
+    background: #f9f9f9;
+    padding: 15px;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    border-radius: 3px;
+}
+
+.ffb-cache-count {
+    font-size: 24px;
+    font-weight: bold;
+    color: #0073aa;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.ffb-cache-label {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Button Styling */
+.ffb-delete-ip, .ffb-allow-ip {
+    margin-right: 10px;
+}
+
+.ffb-delete-ip:hover {
+    background: #f1f1f1;
+    border-color: #d63638;
+    color: #d63638;
+}
+
+.ffb-allow-ip:hover {
+    background: #007017;
+    border-color: #007017;
+}
+
+/* Access Log Page Styles */
+.ffb-status {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.ffb-status-blocked {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.ffb-status-allowed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.ffb-status-rate_limit {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.ffb-status-admin_action {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+/* Access Log Filters */
+.ffb-filters {
+    background: #fff;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.ffb-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.ffb-filter-row label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-weight: 600;
+}
+
+.ffb-filter-row input[type="text"],
+.ffb-filter-row input[type="date"],
+.ffb-filter-row select {
+    min-width: 150px;
+    padding: 5px;
+}
+
+.ffb-filter-row .button {
+    margin-bottom: 2px;
+}
+
+/* Pagination Styles */
+.tablenav-pages {
+    margin-top: 15px;
+    text-align: right;
+}
+
+.tablenav-pages .pagination-links {
+    display: inline-block;
+}
+
+.tablenav-pages .page-numbers {
+    display: inline-block;
+    min-width: 30px;
+    height: 30px;
+    margin: 0 2px;
+    padding: 0 4px;
+    font-size: 13px;
+    line-height: 28px;
+    text-align: center;
+    text-decoration: none;
+    color: #646970;
+    border: 1px solid #8c8f94;
+    border-radius: 3px;
+    background: #f6f7f7;
+}
+
+.tablenav-pages .page-numbers.current {
+    border-color: #646970;
+    color: #fff;
+    background: #646970;
+}
+
+.tablenav-pages .page-numbers:hover {
+    color: #135e96;
+    border-color: #135e96;
+    background: #f0f0f1;
+}
+
+/* Pagination styles */
+.tablenav-pages .pagination-links {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.tablenav-pages .pagination-links .button {
+    padding: 0 10px;
+    line-height: 30px;
+    height: 30px;
+}
+
+.tablenav-pages .paging-input {
+    margin: 0 6px;
+    vertical-align: middle;
+}
+
+/* Filter styles */
+.tablenav.top {
+    margin-bottom: 15px;
+}
+
+.tablenav .alignleft.actions {
+    margin-right: 10px;
+}
+
+/* Table styles */
+.wp-list-table th {
+    font-weight: bold;
+}
+
+.wp-list-table td {
+    vertical-align: middle;
+}

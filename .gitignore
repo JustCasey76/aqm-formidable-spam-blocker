@@ -1,0 +1,46 @@
+# Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# WordPress core files and directories (if inside plugin directory)
+.htaccess
+wp-config.php
+wp-content/
+wp-admin/
+wp-includes/
+
+# Node modules (if using)
+/node_modules/
+
+# Composer vendor directory (if using)
+/vendor/
+
+# Log files
+*.log
+error_log
+access_log
+
+# Editor files
+.idea/
+.vscode/
+
+# Cache and temp files
+*.tmp
+*.cache
+
+# Zip files (often used for plugin distribution)
+*.zip
+*.tar.gz
+
+# Local development configurations
+.env
+.env.*
+!.env.example
