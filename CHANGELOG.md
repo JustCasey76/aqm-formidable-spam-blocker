@@ -1,5 +1,10 @@
 # AQM Formidable Forms Spam Blocker Changelog
 
+## [2.1.69] - 2025-03-05
+- Fixed issue with duplicate version tags in blocked messages
+- Optimized region code detection to prevent redundant checks
+- Streamlined geolocation data processing
+
 ## [2.1.68] - 2025-03-05
 - Added utility script to clear update cache
 - Improved error logging for API responses

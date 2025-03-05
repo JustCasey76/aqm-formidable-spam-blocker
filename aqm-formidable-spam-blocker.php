@@ -3,7 +3,7 @@
  * Plugin Name: AQM Formidable Forms Spam Blocker
  * Plugin URI: https://aqmarketing.com
  * Description: Block form submissions based on IP geolocation and other criteria.
- * Version: 2.1.68
+ * Version: 2.1.69
  * Author: AQ Marketing
  * Author URI: https://aqmarketing.com
  * Text Domain: aqm-formidable-spam-blocker
@@ -40,7 +40,7 @@ class FormidableFormsBlocker {
     private $rate_limit_requests = 3; // Max requests per IP in timeframe
     private $blocked_ips = array(); // IPs to block for testing
     private $log_enabled = true; // Whether to log access attempts
-    private $version = '2.1.68';
+    private $version = '2.1.69';
     private $geo_data = null;
     private $is_blocked = null;
     private $blocked_message = ''; // Blocked message
@@ -48,7 +48,7 @@ class FormidableFormsBlocker {
 
     public function __construct() {
         // Set version
-        $this->version = '2.1.68';
+        $this->version = '2.1.69';
         
         // Initialize properties
         $this->init_properties();
@@ -935,11 +935,11 @@ class FormidableFormsBlocker {
         wp_enqueue_script('jquery');
         
         // Enqueue the geo-blocker script with cache busting
-        $js_version = '2.1.68-' . time(); // Add timestamp for cache busting
+        $js_version = '2.1.69-' . time(); // Add timestamp for cache busting
         wp_enqueue_script('ffb-geo-blocker', plugin_dir_url(__FILE__) . 'geo-blocker.js', array('jquery'), $js_version, true);
         
         // Enqueue the styles
-        wp_enqueue_style('ffb-styles', plugin_dir_url(__FILE__) . 'style.css', array(), '2.1.68');
+        wp_enqueue_style('ffb-styles', plugin_dir_url(__FILE__) . 'style.css', array(), '2.1.69');
         
         // Add honeypot CSS
         $honeypot_css = "
@@ -1016,10 +1016,10 @@ class FormidableFormsBlocker {
         wp_enqueue_style('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', array(), '4.1.0');
         
         // Enqueue our admin script
-        wp_enqueue_script('ffb-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery', 'jquery-ui-tabs', 'select2'), '2.1.68', true);
+        wp_enqueue_script('ffb-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery', 'jquery-ui-tabs', 'select2'), '2.1.69', true);
         
         // Enqueue our admin styles
-        wp_enqueue_style('ffb-admin-styles', plugin_dir_url(__FILE__) . 'assets/css/admin.css', array(), '2.1.68');
+        wp_enqueue_style('ffb-admin-styles', plugin_dir_url(__FILE__) . 'assets/css/admin.css', array(), '2.1.69');
         
         // Pass data to the script
         wp_localize_script('ffb-admin', 'ffbAdminVars', array(
@@ -2033,8 +2033,11 @@ class FormidableFormsBlocker {
         // Filter the message
         $message = apply_filters('ffb_blocked_message', $message);
         
-        // Add version tag for troubleshooting
-        $message .= "\n<!-- FFB v{$this->version} -->";
+        // Check if the message already has our version tag
+        if (strpos($message, '<!-- FFB v') === false) {
+            // Add version tag for troubleshooting
+            $message .= "\n<!-- FFB v{$this->version} -->";
+        }
         
         return $message;
     }
@@ -2143,19 +2146,6 @@ class FormidableFormsBlocker {
         } elseif (isset($geo_data['subdivision_1_code'])) {
             $region = $geo_data['subdivision_1_code'];
             $region_name = $geo_data['subdivision_1_code'];
-        }
-        
-        // Also check if we have a region code
-        if ($region === 'Unknown' || $region_name === 'Unknown') {
-            if (isset($geo_data['region_code'])) {
-                $region_code = $geo_data['region_code'];
-                $region_name = $region_code;
-                $region = $region_code;
-            } elseif (isset($geo_data['regionCode'])) {
-                $region_code = $geo_data['regionCode'];
-                $region_name = $region_code;
-                $region = $region_code;
-            }
         }
         
         $city = isset($geo_data['city']) ? $geo_data['city'] : 'Unknown';
@@ -2303,7 +2293,7 @@ function ffb_create_log_table() {
     dbDelta($sql);
         
     // Update the DB version option to track that we've created the table
-    update_option('ffb_db_version', '2.1.68');
+    update_option('ffb_db_version', '2.1.69');
     error_log('FFB Debug: Created access log table');
 }
 
@@ -2329,7 +2319,7 @@ function ffb_handle_db_migration() {
     }
     
     // Update DB version
-    update_option('ffb_db_version', '2.1.68');
+    update_option('ffb_db_version', '2.1.69');
 }
 
 // Handle database migration on plugin load
