@@ -3,7 +3,7 @@
  * Plugin Name: AQM Formidable Forms Spam Blocker
  * Plugin URI: https://aqmarketing.com
  * Description: Block form submissions based on IP geolocation and other criteria.
- * Version: 2.1.66
+ * Version: 2.1.67
  * Author: AQ Marketing
  * Author URI: https://aqmarketing.com
  * Text Domain: aqm-formidable-spam-blocker
@@ -14,16 +14,10 @@ if (!defined('ABSPATH')) {
 }
 
 // Include the updater class
-// require_once plugin_dir_path(__FILE__) . 'plugin-updater.php';
+require_once plugin_dir_path(__FILE__) . 'plugin-updater.php';
 
 // Initialize the updater
 function aqm_form_security_updater() {
-    // Updater functionality has been completely disabled
-    return;
-    
-    // Disable GitHub updates
-    return;
-    
     // Only run in admin
     if (!is_admin()) {
         return;
@@ -32,7 +26,7 @@ function aqm_form_security_updater() {
     $updater = new AQM_Plugin_Updater(
         __FILE__,
         'JustCasey76',
-        'aqm-plugins'
+        'aqm-formidable-spam-blocker'
     );
 }
 add_action('init', 'aqm_form_security_updater');
@@ -46,7 +40,7 @@ class FormidableFormsBlocker {
     private $rate_limit_requests = 3; // Max requests per IP in timeframe
     private $blocked_ips = array(); // IPs to block for testing
     private $log_enabled = true; // Whether to log access attempts
-    private $version = '2.1.66';
+    private $version = '2.1.67';
     private $geo_data = null;
     private $is_blocked = null;
     private $blocked_message = ''; // Blocked message
@@ -54,7 +48,7 @@ class FormidableFormsBlocker {
 
     public function __construct() {
         // Set version
-        $this->version = '2.1.66';
+        $this->version = '2.1.67';
         
         // Initialize properties
         $this->init_properties();
@@ -941,11 +935,11 @@ class FormidableFormsBlocker {
         wp_enqueue_script('jquery');
         
         // Enqueue the geo-blocker script with cache busting
-        $js_version = '2.1.66-' . time(); // Add timestamp for cache busting
+        $js_version = '2.1.67-' . time(); // Add timestamp for cache busting
         wp_enqueue_script('ffb-geo-blocker', plugin_dir_url(__FILE__) . 'geo-blocker.js', array('jquery'), $js_version, true);
         
         // Enqueue the styles
-        wp_enqueue_style('ffb-styles', plugin_dir_url(__FILE__) . 'style.css', array(), '2.1.66');
+        wp_enqueue_style('ffb-styles', plugin_dir_url(__FILE__) . 'style.css', array(), '2.1.67');
         
         // Add honeypot CSS
         $honeypot_css = "
@@ -1022,10 +1016,10 @@ class FormidableFormsBlocker {
         wp_enqueue_style('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', array(), '4.1.0');
         
         // Enqueue our admin script
-        wp_enqueue_script('ffb-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery', 'jquery-ui-tabs', 'select2'), '2.1.66', true);
+        wp_enqueue_script('ffb-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery', 'jquery-ui-tabs', 'select2'), '2.1.67', true);
         
         // Enqueue our admin styles
-        wp_enqueue_style('ffb-admin-styles', plugin_dir_url(__FILE__) . 'assets/css/admin.css', array(), '2.1.66');
+        wp_enqueue_style('ffb-admin-styles', plugin_dir_url(__FILE__) . 'assets/css/admin.css', array(), '2.1.67');
         
         // Pass data to the script
         wp_localize_script('ffb-admin', 'ffbAdminVars', array(
@@ -1468,7 +1462,8 @@ class FormidableFormsBlocker {
         
         // Check if we have the expected data
         if (empty($data) || !isset($data['country_code'])) {
-            error_log('FFB Debug: API response missing expected data');
+            $error_msg = isset($data['message']) ? $data['message'] : 'Unknown error';
+            error_log('FFB Debug: API returned error: ' . $error_msg);
             wp_send_json_error('API Error: Response missing expected data');
             return;
         }
@@ -1829,8 +1824,8 @@ class FormidableFormsBlocker {
             }
         }
         
-        // If we made it here, location is allowed
-        error_log('FFB Debug: Location is allowed');
+        // If we've gotten here, all checks have passed
+        error_log('FFB Debug: Location allowed: ' . $country_code);
         return true;
     }
     
@@ -2300,7 +2295,7 @@ function ffb_create_log_table() {
     dbDelta($sql);
         
     // Update the DB version option to track that we've created the table
-    update_option('ffb_db_version', '2.1.66');
+    update_option('ffb_db_version', '2.1.67');
     error_log('FFB Debug: Created access log table');
 }
 
@@ -2326,7 +2321,7 @@ function ffb_handle_db_migration() {
     }
     
     // Update DB version
-    update_option('ffb_db_version', '2.1.66');
+    update_option('ffb_db_version', '2.1.67');
 }
 
 // Handle database migration on plugin load
@@ -2342,7 +2337,7 @@ function handle_save_settings() {
     
     // Verify capabilities
     if (!current_user_can('manage_options')) {
-        wp_die('Unauthorized access');
+        wp_die('Unauthorized');
     }
     
     // Verify nonce
@@ -2469,7 +2464,7 @@ function aqm_clear_update_cache() {
     // Clear the plugin update data
     wp_clean_plugins_cache();
 }
-add_action('admin_init', 'aqm_clear_update_cache');
+// add_action('admin_init', 'aqm_clear_update_cache');
 
 /**
  * Remove update notification for this plugin
@@ -2486,4 +2481,4 @@ function aqm_remove_update_notifications($value) {
     }
     return $value;
 }
-add_filter('site_transient_update_plugins', 'aqm_remove_update_notifications');
+// add_filter('site_transient_update_plugins', 'aqm_remove_update_notifications');

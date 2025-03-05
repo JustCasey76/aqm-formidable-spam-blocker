@@ -1,5 +1,12 @@
 # AQM Formidable Forms Spam Blocker Changelog
 
+## [2.1.67] - 2025-03-05
+- Changed GitHub repository location for updates
+- Fixed apostrophe handling in blocked messages using stripslashes()
+- Improved geolocation blocking hierarchy and message display
+- Enhanced error reporting for API responses
+- Optimized blocking logic to prevent redundant checks
+
 ## [2.1.66] - 2025-03-03
 - Fixed incorrect table name in settings.php template causing "Table does not exist" warning
 - Updated table name reference to use consistent 'aqm_formidable_spam_blocker_log' across all files
