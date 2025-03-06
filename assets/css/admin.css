@@ -90,3 +90,17 @@
 .ffb-log-table tr:hover {
     background-color: #f1f1f1;
 }
+
+/* Country flag styles */
+.fi {
+    display: inline-block;
+    width: 1.2em;
+    height: 1em;
+    margin-right: 0.4em;
+    background-size: contain;
+    background-position: 50%;
+    background-repeat: no-repeat;
+    position: relative;
+    top: 0.1em;
+    border-radius: 0.1em;
+}

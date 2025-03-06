@@ -1,6 +1,6 @@
 /**
  * AQM Formidable Forms Spam Blocker Admin JavaScript
- * Version: 2.1.63
+ * Version: 2.1.70
  */
 (function($) {
     // Define ajaxurl if it's not already defined (happens on some WordPress installs)
@@ -21,6 +21,37 @@
     }
 
     $(document).ready(function() {
+        // Initialize tabs
+        if ($.fn.tabs) {
+            $('.ffb-tabs').tabs();
+        }
+        
+        // Initialize Select2 for country dropdown with flag icons
+        if ($.fn.select2) {
+            // Standard dropdowns
+            $('select').not('.country-select').select2();
+            
+            // Country dropdown with flags
+            $('select[name="country"]').select2({
+                templateResult: formatCountryOption,
+                templateSelection: formatCountryOption
+            });
+        }
+        
+        // Format country options with flag icons
+        function formatCountryOption(state) {
+            if (!state.id) {
+                return state.text; // For the "All Countries" option
+            }
+            
+            var countryCode = state.id.toLowerCase();
+            var $state = $(
+                '<span><span class="fi fi-' + countryCode + '"></span> ' + state.text + '</span>'
+            );
+            
+            return $state;
+        }
+
         // Handle Create Table button
         $('#ffb-create-table-btn').on('click', function() {
             if (confirm('Are you sure you want to create or recreate the access log table? Any existing table will be replaced.')) {

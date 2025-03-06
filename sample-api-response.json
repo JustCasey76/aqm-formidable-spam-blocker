@@ -1,0 +1,60 @@
+{
+    "ip": "43.245.57.37",
+    "type": "ipv4",
+    "continent_code": "OC",
+    "continent_name": "Oceania",
+    "country_code": "PG",
+    "country_name": "Papua New Guinea",
+    "region_code": null,
+    "region_name": null,
+    "city": null,
+    "zip": null,
+    "latitude": -6.0,
+    "longitude": 147.0,
+    "msa": null,
+    "dma": null,
+    "radius": null,
+    "ip_routing_type": "mobile gateway",
+    "connection_type": "mobile wireless",
+    "location": {
+        "geoname_id": null,
+        "capital": "Port Moresby",
+        "languages": [
+            {
+                "code": "en",
+                "name": "English",
+                "native": "English"
+            }
+        ],
+        "country_flag": "https://assets.ipstack.com/flags/pg.svg",
+        "country_flag_emoji": "\ud83c\uddf5\ud83c\uddec",
+        "country_flag_emoji_unicode": "U+1F1F5 U+1F1EC",
+        "calling_code": "675",
+        "is_eu": false
+    },
+    "time_zone": {
+        "id": null,
+        "current_time": null,
+        "gmt_offset": null,
+        "code": null,
+        "is_daylight_saving": null
+    },
+    "currency": {
+        "code": "PGK",
+        "name": "Papua New Guinean Kina",
+        "plural": "Papua New Guinean Kina",
+        "symbol": "K",
+        "symbol_native": "K"
+    },
+    "connection": {
+        "asn": 139898,
+        "isp": "Digitec Communications Limited",
+        "sld": null,
+        "tld": null,
+        "carrier": "digitec communications limited",
+        "home": null,
+        "organization_type": null,
+        "isic_code": null,
+        "naics_code": null
+    }
+}

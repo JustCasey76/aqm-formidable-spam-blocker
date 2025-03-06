@@ -3,7 +3,7 @@
  * Plugin Name: AQM Formidable Forms Spam Blocker
  * Plugin URI: https://aqmarketing.com
  * Description: Block form submissions based on IP geolocation and other criteria.
- * Version: 2.1.69
+ * Version: 2.1.71
  * Author: AQ Marketing
  * Author URI: https://aqmarketing.com
  * Text Domain: aqm-formidable-spam-blocker
@@ -40,7 +40,7 @@ class FormidableFormsBlocker {
     private $rate_limit_requests = 3; // Max requests per IP in timeframe
     private $blocked_ips = array(); // IPs to block for testing
     private $log_enabled = true; // Whether to log access attempts
-    private $version = '2.1.69';
+    private $version = '2.1.71';
     private $geo_data = null;
     private $is_blocked = null;
     private $blocked_message = ''; // Blocked message
@@ -48,7 +48,7 @@ class FormidableFormsBlocker {
 
     public function __construct() {
         // Set version
-        $this->version = '2.1.69';
+        $this->version = '2.1.71';
         
         // Initialize properties
         $this->init_properties();
@@ -119,6 +119,9 @@ class FormidableFormsBlocker {
             ffb_create_log_table();
         }
         
+        // Migrate any old HTML-formatted blocked messages to plain text
+        $this->migrate_blocked_message_format();
+        
         // Register shortcodes
         add_shortcode('ffb_check_location', array($this, 'shortcode_check_location'));
         
@@ -130,6 +133,25 @@ class FormidableFormsBlocker {
         }
     }
     
+    /**
+     * Migrate existing blocked message from HTML format to plain text
+     */
+    private function migrate_blocked_message_format() {
+        $message = get_option('ffb_blocked_message', '');
+        
+        // If the message contains HTML, extract just the text content
+        if (!empty($message) && strpos($message, '<div') !== false) {
+            // Extract text from within HTML paragraph tags
+            if (preg_match('/<p>(.*?)<\/p>/s', $message, $matches)) {
+                $plain_text = $matches[1];
+                // Save the plain text back to the database
+                update_option('ffb_blocked_message', $plain_text);
+                // Update the instance property
+                $this->blocked_message = $plain_text;
+            }
+        }
+    }
+
     /**
      * Create the access log table if it doesn't exist
      */
@@ -407,9 +429,10 @@ class FormidableFormsBlocker {
                         // Get unique countries from the database
                         $countries = $wpdb->get_col("SELECT DISTINCT country_code FROM $table_name WHERE country_code != '' ORDER BY country_code");
                         foreach ($countries as $country): 
+                            $country_lower = strtolower($country);
                         ?>
                             <option value="<?php echo esc_attr($country); ?>" <?php selected($_GET['country'] ?? '', $country); ?>>
-                                <?php echo esc_html($country); ?>
+                                <span class="fi fi-<?php echo esc_attr($country_lower); ?>"></span> <?php echo esc_html($country); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -466,7 +489,18 @@ class FormidableFormsBlocker {
                     <tr>
                         <td><?php echo esc_html(date('Y-m-d H:i:s', strtotime($log->timestamp))); ?></td>
                         <td><?php echo esc_html($log->ip_address); ?></td>
-                        <td><?php echo isset($log->country_code) ? esc_html($log->country_code) : ''; ?></td>
+                        <td>
+                            <?php 
+                            if (isset($log->country_code) && !empty($log->country_code)):
+                                $country_code = strtolower($log->country_code);
+                                // Display country flag with country code
+                                echo '<span class="fi fi-' . esc_attr($country_code) . '" title="' . esc_attr($log->country ?? $log->country_code) . '"></span> ';
+                                echo esc_html($log->country_code);
+                            else:
+                                echo 'Unknown';
+                            endif;
+                            ?>
+                        </td>
                         <td><?php echo isset($log->region_name) ? esc_html($log->region_name) : ''; ?></td>
                         <td><?php echo isset($log->status) ? esc_html($log->status) : ''; ?></td>
                         <td><?php echo isset($log->reason) ? esc_html($log->reason) : ''; ?></td>
@@ -935,11 +969,11 @@ class FormidableFormsBlocker {
         wp_enqueue_script('jquery');
         
         // Enqueue the geo-blocker script with cache busting
-        $js_version = '2.1.69-' . time(); // Add timestamp for cache busting
+        $js_version = '2.1.71-' . time(); // Add timestamp for cache busting
         wp_enqueue_script('ffb-geo-blocker', plugin_dir_url(__FILE__) . 'geo-blocker.js', array('jquery'), $js_version, true);
         
         // Enqueue the styles
-        wp_enqueue_style('ffb-styles', plugin_dir_url(__FILE__) . 'style.css', array(), '2.1.69');
+        wp_enqueue_style('ffb-styles', plugin_dir_url(__FILE__) . 'style.css', array(), '2.1.71');
         
         // Add honeypot CSS
         $honeypot_css = "
@@ -1001,25 +1035,29 @@ class FormidableFormsBlocker {
 
     public function admin_scripts($hook) {
         // Only load on our plugin pages
-        if (strpos($hook, 'ff-spam-blocker') === false) {
+        $screen = get_current_screen();
+        if (!$screen || strpos($screen->id, 'ff-spam-blocker') === false) {
             return;
         }
-        
+
         // Enqueue jQuery and jQuery UI
         wp_enqueue_script('jquery');
         wp_enqueue_script('jquery-ui-core');
         wp_enqueue_script('jquery-ui-tabs');
         wp_enqueue_script('jquery-ui-datepicker');
-        
+
         // Enqueue Select2 for better dropdowns
         wp_enqueue_script('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', array('jquery'), '4.1.0', true);
         wp_enqueue_style('select2', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css', array(), '4.1.0');
         
+        // Enqueue country flag CSS for log page
+        wp_enqueue_style('country-flags', 'https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css', array(), '6.6.6');
+
         // Enqueue our admin script
-        wp_enqueue_script('ffb-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery', 'jquery-ui-tabs', 'select2'), '2.1.69', true);
-        
+        wp_enqueue_script('ffb-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery', 'jquery-ui-tabs', 'select2'), '2.1.71', true);
+
         // Enqueue our admin styles
-        wp_enqueue_style('ffb-admin-styles', plugin_dir_url(__FILE__) . 'assets/css/admin.css', array(), '2.1.69');
+        wp_enqueue_style('ffb-admin-styles', plugin_dir_url(__FILE__) . 'assets/css/admin.css', array(), '2.1.71');
         
         // Pass data to the script
         wp_localize_script('ffb-admin', 'ffbAdminVars', array(
@@ -1780,7 +1818,7 @@ class FormidableFormsBlocker {
             $country_code = strtoupper($geo_data['country_code']);
             $approved_countries = array_map('strtoupper', $this->get_approved_countries());
             
-            error_log('FFB Debug: Checking country: ' . $country_code . ' against approved countries: ' . implode(',', $approved_countries));
+            error_log('FFB Debug: Country code ' . $country_code . ' checking against approved list: ' . implode(',', $approved_countries));
             
             // If approved countries list is empty, allow all countries
             if (empty($approved_countries)) {
@@ -2026,20 +2064,21 @@ class FormidableFormsBlocker {
      * @return string The message to display
      */
     public function get_blocked_message() {
-        $message = get_option('ffb_blocked_message', '<div class="frm_error_style" style="text-align:center;"><p>We apologize, but we are currently not accepting submissions from your location.</p></div>');
+        // Get the plain text message from database with a simple default message
+        $message = get_option('ffb_blocked_message', 'We apologize, but we are currently not accepting submissions from your location.');
         // Remove backslashes from message to fix apostrophes and other characters
         $message = stripslashes($message);
         
         // Filter the message
         $message = apply_filters('ffb_blocked_message', $message);
         
-        // Check if the message already has our version tag
-        if (strpos($message, '<!-- FFB v') === false) {
-            // Add version tag for troubleshooting
-            $message .= "\n<!-- FFB v{$this->version} -->";
-        }
+        // Wrap the message in HTML 
+        $formatted_message = '<div class="frm_error_style" style="text-align:center;"><p>' . $message . '</p></div>';
         
-        return $message;
+        // Add version tag for troubleshooting
+        $formatted_message .= "\n<!-- FFB v{$this->version} -->";
+        
+        return $formatted_message;
     }
 
     /**
@@ -2293,7 +2332,7 @@ function ffb_create_log_table() {
     dbDelta($sql);
         
     // Update the DB version option to track that we've created the table
-    update_option('ffb_db_version', '2.1.69');
+    update_option('ffb_db_version', '2.1.71');
     error_log('FFB Debug: Created access log table');
 }
 
@@ -2319,7 +2358,7 @@ function ffb_handle_db_migration() {
     }
     
     // Update DB version
-    update_option('ffb_db_version', '2.1.69');
+    update_option('ffb_db_version', '2.1.71');
 }
 
 // Handle database migration on plugin load

@@ -1,5 +1,17 @@
 # AQM Formidable Forms Spam Blocker Changelog
 
+## [2.1.71] - 2025-03-06
+- Modified blocked message field to store plain text instead of HTML
+- Added automatic HTML formatting when displaying blocked messages
+- Improved user experience when editing blocked message in admin
+- Added migration function to convert existing HTML messages to plain text
+
+## [2.1.70] - 2025-03-06
+- Added country flags to access logs for improved visual identification
+- Improved admin scripts loading to only target plugin pages
+- Enhanced UI with visual country indicators
+- Updated flag-icons library integration for country display
+
 ## [2.1.69] - 2025-03-05
 - Fixed issue with duplicate version tags in blocked messages
 - Optimized region code detection to prevent redundant checks
