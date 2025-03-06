@@ -1,5 +1,10 @@
 # AQM Formidable Forms Spam Blocker Changelog
 
+## [2.1.72] - 2025-03-06
+- Removed API usage functionality due to inconsistencies with ipapi.com dashboard
+- Added safeguards to hide API usage UI elements in the admin
+- Fixed region name variable in form submission handler
+
 ## [2.1.71] - 2025-03-06
 - Modified blocked message field to store plain text instead of HTML
 - Added automatic HTML formatting when displaying blocked messages

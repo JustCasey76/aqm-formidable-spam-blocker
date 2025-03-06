@@ -1,6 +1,6 @@
 /**
  * AQM Formidable Forms Spam Blocker Admin JavaScript
- * Version: 2.1.70
+ * Version: 2.1.72
  */
 (function($) {
     // Define ajaxurl if it's not already defined (happens on some WordPress installs)
@@ -14,7 +14,6 @@
         window.ffbAdminVars = {
             nonce: '',
             ajax_url: ajaxurl || '',
-            refreshing_usage: 'Refreshing...',
             searching: 'Searching...',
             clearing_cache: 'Clearing cache...'
         };
@@ -155,64 +154,6 @@
             });
         });
         
-        // Refresh API Usage
-        function refreshApiUsage() {
-            var usageDiv = $('#ffb-api-usage');
-            var refreshButton = $('#ffb-refresh-usage');
-            
-            refreshButton.prop('disabled', true);
-            refreshButton.text(ffbAdminVars.refreshing_usage);
-            
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'ffb_refresh_api_usage',
-                    nonce: ffbAdminVars.nonce
-                },
-                success: function(response) {
-                    if (response.success) {
-                        var usage = response.data;
-                        var html = '<table class="widefat">';
-                        html += '<tr><th>Current Month</th><td>' + usage.month + '</td></tr>';
-                        
-                        // Calculate percentage for progress bar
-                        var percentage = Math.min(Math.round((usage.requests / usage.limit) * 100), 100);
-                        var barColor = percentage < 70 ? 'green' : (percentage < 90 ? 'orange' : 'red');
-                        
-                        html += '<tr><th>Requests Used</th><td>' + 
-                               usage.requests + ' of ' + usage.limit + 
-                               ' (' + percentage + '%)' +
-                               '<div style="background-color: #f0f0f0; width: 100%; height: 20px; margin-top: 5px; border-radius: 3px;">' +
-                               '<div style="background-color: ' + barColor + '; width: ' + percentage + '%; height: 20px; border-radius: 3px;"></div>' +
-                               '</div></td></tr>';
-                        
-                        html += '<tr><th>Last Updated</th><td>' + new Date(usage.last_check * 1000).toLocaleString() + '</td></tr>';
-                        
-                        // Show a note if this is demo data
-                        if (usage.is_demo) {
-                            html += '<tr><td colspan="2"><em>Note: This is demo data. Connect your API key for actual usage statistics.</em></td></tr>';
-                        }
-                        
-                        html += '</table>';
-                        usageDiv.html(html);
-                    } else {
-                        usageDiv.html('<div class="notice notice-error"><p>Failed to get API usage data: ' + (response.data || 'Unknown error') + '</p></div>');
-                    }
-                },
-                error: function() {
-                    usageDiv.html('<div class="notice notice-error"><p>Failed to refresh API usage. Please try again.</p></div>');
-                },
-                complete: function() {
-                    refreshButton.prop('disabled', false);
-                    refreshButton.text('Refresh Usage');
-                }
-            });
-        }
-        
-        $('#ffb-refresh-usage').on('click', refreshApiUsage);
-        refreshApiUsage(); // Initial load
-        
         // Search IP
         $('#ffb-search-ip').on('click', function() {
             var button = $(this);
@@ -339,5 +280,117 @@
                 }
             });
         });
+        
+        // Initialize API key copying
+        $('#ffb-copy-api-key').on('click', function() {
+            var apiKeyField = $('#ffb-api-key');
+            apiKeyField.select();
+            
+            try {
+                document.execCommand('copy');
+                $(this).text('Copied!');
+                
+                setTimeout(function() {
+                    $('#ffb-copy-api-key').text('Copy');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy API key:', err);
+            }
+        });
+        
+        // Initialize IP test button
+        $('#ffb-test-ip-btn').on('click', function() {
+            var button = $(this);
+            var ip = $('#ffb-test-ip-input').val();
+            var resultDiv = $('#ffb-test-ip-result');
+            
+            if (!ip) {
+                resultDiv.html('<div class="notice notice-error"><p>Please enter an IP address</p></div>');
+                return;
+            }
+            
+            button.prop('disabled', true);
+            resultDiv.html('Testing IP...');
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'ffb_test_ip',
+                    nonce: ffbAdminVars.nonce,
+                    ip: ip
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var result = response.data;
+                        var statusClass = result.is_blocked ? 'notice-error' : 'notice-success';
+                        var statusText = result.is_blocked ? 'Blocked' : 'Allowed';
+                        
+                        var html = '<div class="notice ' + statusClass + '">';
+                        html += '<p>Status: <strong>' + statusText + '</strong></p>';
+                        
+                        if (result.geo_data) {
+                            var geo = result.geo_data;
+                            html += '<table class="widefat" style="margin-top: 10px;">';
+                            html += '<tr><th>Country</th><td>' + (geo.country_name || 'Unknown') + ' (' + (geo.country_code || '?') + ')';
+                            
+                            // Add flag if country code is available
+                            if (geo.country_code) {
+                                html += ' <span class="fi fi-' + geo.country_code.toLowerCase() + '"></span>';
+                            }
+                            
+                            html += '</td></tr>';
+                            html += '<tr><th>Region</th><td>' + (geo.region_name || 'Unknown') + ' (' + (geo.region_code || '?') + ')</td></tr>';
+                            html += '<tr><th>City</th><td>' + (geo.city || 'Unknown') + '</td></tr>';
+                            html += '<tr><th>ZIP</th><td>' + (geo.zip || 'Unknown') + '</td></tr>';
+                            html += '</table>';
+                        }
+                        
+                        html += '</div>';
+                        resultDiv.html(html);
+                    } else {
+                        resultDiv.html('<div class="notice notice-error"><p>Error: ' + (response.data || 'Unknown error') + '</p></div>');
+                    }
+                },
+                error: function() {
+                    resultDiv.html('<div class="notice notice-error"><p>Failed to test IP. Please try again.</p></div>');
+                },
+                complete: function() {
+                    button.prop('disabled', false);
+                }
+            });
+        });
+
+        // On page load actions
+        if ($('#ffb-log-table-container').length > 0) {
+            refreshCounts();
+        }
+        
+        // Hide API usage section that's no longer functional
+        $('#ffb-api-usage-container').hide();
+        
+        // Hide any remnant API usage refresh buttons
+        $('.ffb-refresh-usage-button').hide();
     });
+    
+    // Initialize refresh counts function
+    function refreshCounts() {
+        var blockedCountSpan = $('#ffb-blocked-count');
+        var allowedCountSpan = $('#ffb-allowed-count');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'ffb_refresh_counts',
+                nonce: ffbAdminVars.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    blockedCountSpan.text(response.data.blocked);
+                    allowedCountSpan.text(response.data.allowed);
+                }
+            }
+        });
+    }
 })(jQuery);

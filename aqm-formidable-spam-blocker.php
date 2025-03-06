@@ -3,7 +3,7 @@
  * Plugin Name: AQM Formidable Forms Spam Blocker
  * Plugin URI: https://aqmarketing.com
  * Description: Block form submissions based on IP geolocation and other criteria.
- * Version: 2.1.71
+ * Version: 2.1.72
  * Author: AQ Marketing
  * Author URI: https://aqmarketing.com
  * Text Domain: aqm-formidable-spam-blocker
@@ -40,7 +40,7 @@ class FormidableFormsBlocker {
     private $rate_limit_requests = 3; // Max requests per IP in timeframe
     private $blocked_ips = array(); // IPs to block for testing
     private $log_enabled = true; // Whether to log access attempts
-    private $version = '2.1.71';
+    private $version = '2.1.72';
     private $geo_data = null;
     private $is_blocked = null;
     private $blocked_message = ''; // Blocked message
@@ -48,7 +48,7 @@ class FormidableFormsBlocker {
 
     public function __construct() {
         // Set version
-        $this->version = '2.1.71';
+        $this->version = '2.1.72';
         
         // Initialize properties
         $this->init_properties();
@@ -969,11 +969,11 @@ class FormidableFormsBlocker {
         wp_enqueue_script('jquery');
         
         // Enqueue the geo-blocker script with cache busting
-        $js_version = '2.1.71-' . time(); // Add timestamp for cache busting
+        $js_version = '2.1.72-' . time(); // Add timestamp for cache busting
         wp_enqueue_script('ffb-geo-blocker', plugin_dir_url(__FILE__) . 'geo-blocker.js', array('jquery'), $js_version, true);
         
         // Enqueue the styles
-        wp_enqueue_style('ffb-styles', plugin_dir_url(__FILE__) . 'style.css', array(), '2.1.71');
+        wp_enqueue_style('ffb-styles', plugin_dir_url(__FILE__) . 'style.css', array(), '2.1.72');
         
         // Add honeypot CSS
         $honeypot_css = "
@@ -1054,10 +1054,10 @@ class FormidableFormsBlocker {
         wp_enqueue_style('country-flags', 'https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css', array(), '6.6.6');
 
         // Enqueue our admin script
-        wp_enqueue_script('ffb-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery', 'jquery-ui-tabs', 'select2'), '2.1.71', true);
+        wp_enqueue_script('ffb-admin', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery', 'jquery-ui-tabs', 'select2'), '2.1.72', true);
 
         // Enqueue our admin styles
-        wp_enqueue_style('ffb-admin-styles', plugin_dir_url(__FILE__) . 'assets/css/admin.css', array(), '2.1.71');
+        wp_enqueue_style('ffb-admin-styles', plugin_dir_url(__FILE__) . 'assets/css/admin.css', array(), '2.1.72');
         
         // Pass data to the script
         wp_localize_script('ffb-admin', 'ffbAdminVars', array(
@@ -1141,7 +1141,7 @@ class FormidableFormsBlocker {
         
         // Log the allowed access
         $country_name = isset($geo_data['country_name']) ? $geo_data['country_name'] : 'Unknown';
-        $region_name = isset($geo_data['region']) ? $geo_data['region'] : 'Unknown';
+        $region_name = isset($geo_data['region_name']) ? $geo_data['region_name'] : 'Unknown';
         $this->log_access_attempt($ip, 'allowed', 'Location allowed', $form_id, 'form_submission');
         
         return $errors;
@@ -1516,84 +1516,11 @@ class FormidableFormsBlocker {
     
     /**
      * AJAX handler for refreshing API usage
+     * @deprecated 2.1.72 API usage functionality has been removed
      */
     public function ajax_refresh_api_usage() {
-        // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'ffb_admin_nonce')) {
-            wp_send_json_error('Invalid nonce');
-            return;
-        }
-
-        // Get API key
-        $api_key = $this->api_key;
-        if (empty($api_key)) {
-            wp_send_json_error('API key is not set');
-            return;
-        }
-
-        // Get the current time
-        $current_time = time();
-        
-        // Check if we have cached usage data that's less than 1 hour old
-        $usage = get_option('ffb_api_usage', array());
-        
-        // If we have recent data (less than 1 hour old), return it
-        if (!empty($usage) && isset($usage['last_check']) && ($current_time - $usage['last_check']) < 3600) {
-            wp_send_json_success($usage);
-            return;
-        }
-        
-        // Try to get real usage data from the API
-        $api_url = 'https://api.ipapi.com/api?access_key=' . $api_key;
-        $response = wp_remote_get($api_url, array(
-            'timeout' => 15,
-            'user-agent' => 'WordPress/' . get_bloginfo('version') . '; ' . get_bloginfo('url')
-        ));
-        
-        if (is_wp_error($response)) {
-            wp_send_json_error($response->get_error_message());
-            return;
-        }
-        
-        $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
-        
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            wp_send_json_error('Invalid API response');
-            return;
-        }
-
-        // If we have valid data, format and return it
-        if (isset($data['requests']) && isset($data['limit'])) {
-            $usage = array(
-                'month' => date('Y-m'),
-                'requests' => $data['requests'],
-                'limit' => $data['limit'],
-                'last_check' => $current_time
-            );
-            
-            // Update the option with the new data
-            update_option('ffb_api_usage', $usage);
-            
-            // Send response
-            wp_send_json_success($usage);
-            return;
-        }
-        
-        // If we couldn't get real data, generate demo data
-        $usage = array(
-            'month' => date('Y-m'),
-            'requests' => mt_rand(100, 5000), // Random number for demo
-            'limit' => 10000,
-            'last_check' => $current_time,
-            'is_demo' => true // Flag to indicate this is demo data
-        );
-        
-        // Update the option with the demo data
-        update_option('ffb_api_usage', $usage);
-        
-        // Send response
-        wp_send_json_success($usage);
+        // This function has been deprecated in v2.1.72
+        wp_send_json_error('API usage functionality has been removed');
     }
 
     public function settings_page() {
@@ -1833,8 +1760,7 @@ class FormidableFormsBlocker {
         }
         
         // If country is allowed, check state/region if it's US
-        if (!empty($geo_data['country_code']) && strtoupper($geo_data['country_code']) == 'US' && 
-            !empty($geo_data['region_code'])) {
+        if ($country_code == 'US' && !empty($geo_data['region_code'])) {
             $region_code = strtoupper($geo_data['region_code']);
             $approved_states_upper = array_map('strtoupper', $this->get_approved_states());
             
@@ -2276,12 +2202,13 @@ class FormidableFormsBlocker {
         add_filter('the_content', array($this, 'filter_content'), 99);
         
         // AJAX handlers
-        add_action('wp_ajax_ffb_test_api_key', array($this, 'ajax_test_api_key'));
-        add_action('wp_ajax_ffb_check_location', array($this, 'ajax_check_location'));
-        add_action('wp_ajax_ffb_refresh_api_usage', array($this, 'ajax_refresh_api_usage'));
-        add_action('wp_ajax_ffb_clear_cache', array($this, 'ajax_clear_cache'));
-        add_action('wp_ajax_ffb_search_ip', array($this, 'ajax_search_ip'));
-        add_action('wp_ajax_ffb_delete_ip', array($this, 'ajax_delete_ip'));
+        add_action('wp_ajax_ffb_test_ip', array($this, 'ajax_test_ip'));
+        add_action('wp_ajax_ffb_refresh_counts', array($this, 'ajax_refresh_counts'));
+        add_action('wp_ajax_ffb_clear_logs', array($this, 'ajax_clear_logs'));
+        add_action('wp_ajax_ffb_refresh_allowed_states', array($this, 'ajax_refresh_allowed_states'));
+        add_action('wp_ajax_ffb_refresh_allowed_countries', array($this, 'ajax_refresh_allowed_countries'));
+        add_action('wp_ajax_ffb_refresh_blocked_messages', array($this, 'ajax_refresh_blocked_messages'));
+        // The API usage AJAX handler was removed in v2.1.72
         
         // Add action for manual table creation
         add_action('admin_post_ffb_create_table', array($this, 'manual_create_table'));
@@ -2332,7 +2259,7 @@ function ffb_create_log_table() {
     dbDelta($sql);
         
     // Update the DB version option to track that we've created the table
-    update_option('ffb_db_version', '2.1.71');
+    update_option('ffb_db_version', '2.1.72');
     error_log('FFB Debug: Created access log table');
 }
 
@@ -2358,7 +2285,7 @@ function ffb_handle_db_migration() {
     }
     
     // Update DB version
-    update_option('ffb_db_version', '2.1.71');
+    update_option('ffb_db_version', '2.1.72');
 }
 
 // Handle database migration on plugin load
